@@ -1,0 +1,21 @@
+        documento = {
+            "_id": controle-id=do-mongo,
+            "id": novo_id,
+            "mediaTemp": mediaTemp,
+            "medianaTemp": medianaTemp,
+            "modaTemp": modaTemp,
+            "desvioPTemp": desvioPTemp,
+            "coeficienteVTemp": coeficienteVTemp,
+            "assimetriaTemp": assimetriaTemp,
+            "curtoseTemp": curtoseTemp,
+            "mediaUmid": mediaUmid,
+            "medianaUmid": medianaUmid,
+            "modaUmid": modaUmid,
+            "desvioPUmid": desvioPUmid,
+            "coeficienteVUmid": coeficienteVUmid,
+            "assimetriaUmid": assimetriaUmid,
+            "curtoseUmid": curtoseUmid,
+            "temperaturas": temperaturas,
+            "umidades": umidades,
+            "timestamp": datetime.now()
+        }
