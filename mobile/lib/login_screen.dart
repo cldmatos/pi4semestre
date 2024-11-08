@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'dashboard_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -14,13 +16,27 @@ class _LoginScreenState extends State<LoginScreen> {
   String email = '', password = '';
 
   Future<bool> _authenticateUser(String email, String password) async {
-    // Simulação de autenticação; substitua pela lógica real de backend.
-    if (email == 'teste@teste.com' && password == '123456') {
-      // Salvando um token simulado em vez de uma autenticação real
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setString('token', 'token_simulado');
-      return true;
-    } else {
+    try {
+      // Envia a requisição POST para o backend
+      final response = await http.post(
+        Uri.parse('http://10.0.2.2:3000/api/auth/login'),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"email": email, "password": password}),
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+
+        // Armazena o token recebido no SharedPreferences
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('token', responseData['token']);
+
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      print('Erro de autenticação: $e');
       return false;
     }
   }
