@@ -15,36 +15,42 @@ class MyApp extends StatelessWidget {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('token');
 
+    // Retorna o Dashboard se o token existir, senão retorna o Login
     if (token != null) {
-      // Se o token existir, redirecione para o Dashboard
       return DashboardScreen();
     } else {
-      // Se não, redirecione para a tela de Login
       return LoginScreen();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<Widget>(
-      future: _getInitialScreen(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const CircularProgressIndicator();
-        } else {
-          return MaterialApp(
-            title: 'Projeto_PI',
-            theme: ThemeData(
-              colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-              useMaterial3: true,
-            ),
-            home: snapshot.data, // Carrega a tela inicial com base no token
-            routes: {
-              '/register': (context) => RegisterScreen(),
-              '/dashboard': (context) => DashboardScreen(),
-            },
-          );
-        }
+    return MaterialApp(
+      title: 'Projeto_PI',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        useMaterial3: true,
+      ),
+      home: FutureBuilder<Widget>(
+        future: _getInitialScreen(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            // Exibe uma tela de carregamento enquanto espera
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          } else if (snapshot.hasData) {
+            // Carrega a tela inicial com base na presença do token
+            return snapshot.data!;
+          } else {
+            // Em caso de erro, exibe a tela de Login como fallback
+            return const LoginScreen();
+          }
+        },
+      ),
+      routes: {
+        '/register': (context) => const RegisterScreen(),
+        '/dashboard': (context) => const DashboardScreen(),
       },
     );
   }

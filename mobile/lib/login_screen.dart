@@ -14,12 +14,15 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   String email = '', password = '';
+  bool _isLoading = false;
 
   Future<bool> _authenticateUser(String email, String password) async {
+    setState(() {
+      _isLoading = true;
+    });
     try {
-      // Envia a requisição POST para o backend
       final response = await http.post(
-        Uri.parse('http://10.0.2.2:3000/api/auth/login'),
+        Uri.parse('http://10.0.2.2:5000/api/auth/login'),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({"email": email, "password": password}),
       );
@@ -27,17 +30,27 @@ class _LoginScreenState extends State<LoginScreen> {
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
 
-        // Armazena o token recebido no SharedPreferences
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString('token', responseData['token']);
-
-        return true;
+        if (responseData['token'] != null) {
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setString('token', responseData['token']);
+          return true;
+        } else {
+          _showErrorDialog('Erro', 'Token não encontrado na resposta.');
+          return false;
+        }
       } else {
+        _showErrorDialog('Erro de Login', 'Email ou senha inválidos.');
         return false;
       }
     } catch (e) {
       print('Erro de autenticação: $e');
+      _showErrorDialog(
+          'Erro de Conexão', 'Não foi possível se conectar ao servidor.');
       return false;
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -47,10 +60,8 @@ class _LoginScreenState extends State<LoginScreen> {
       if (isAuthenticated) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => DashboardScreen()),
+          MaterialPageRoute(builder: (context) => const DashboardScreen()),
         );
-      } else {
-        _showErrorDialog('Erro de Login', 'Email ou senha inválidos.');
       }
     }
   }
@@ -100,10 +111,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     value!.isEmpty ? 'Digite uma senha' : null,
               ),
               const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _login,
-                child: const Text('Entrar'),
-              ),
+              _isLoading
+                  ? CircularProgressIndicator()
+                  : ElevatedButton(
+                      onPressed: _login,
+                      child: const Text('Entrar'),
+                    ),
               TextButton(
                 onPressed: () {
                   Navigator.pushNamed(context, '/register');
