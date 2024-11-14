@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'dashboard_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -10,12 +14,76 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   String email = '', password = '';
+  bool _isLoading = false;
 
-  void _login() {
-    if (_formKey.currentState!.validate()) {
-      // Processar o login (iremos implementar o backend com MongoDB mais tarde)
-      print("Logando com Email: $email e Senha: $password");
+  Future<bool> _authenticateUser(String email, String password) async {
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      final response = await http.post(
+        Uri.parse('http://10.0.2.2:5000/api/auth/login'),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"email": email, "password": password}),
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+
+        if (responseData['token'] != null) {
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setString('token', responseData['token']);
+          return true;
+        } else {
+          _showErrorDialog('Erro', 'Token não encontrado na resposta.');
+          return false;
+        }
+      } else {
+        _showErrorDialog('Erro de Login', 'Email ou senha inválidos.');
+        return false;
+      }
+    } catch (e) {
+      print('Erro de autenticação: $e');
+      _showErrorDialog(
+          'Erro de Conexão', 'Não foi possível se conectar ao servidor.');
+      return false;
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
+  }
+
+  void _login() async {
+    if (_formKey.currentState!.validate()) {
+      bool isAuthenticated = await _authenticateUser(email, password);
+      if (isAuthenticated) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const DashboardScreen()),
+        );
+      }
+    }
+  }
+
+  void _showErrorDialog(String title, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -27,6 +95,7 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Form(
           key: _formKey,
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               TextFormField(
                 decoration: const InputDecoration(labelText: 'Email'),
@@ -42,10 +111,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     value!.isEmpty ? 'Digite uma senha' : null,
               ),
               const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _login,
-                child: const Text('Entrar'),
-              ),
+              _isLoading
+                  ? CircularProgressIndicator()
+                  : ElevatedButton(
+                      onPressed: _login,
+                      child: const Text('Entrar'),
+                    ),
               TextButton(
                 onPressed: () {
                   Navigator.pushNamed(context, '/register');
