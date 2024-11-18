@@ -1,0 +1,141 @@
+openapi: '3.0.3'
+info:
+  title: API de Climatização
+  description: API para acessar dados de temperatura e umidade em áreas arborizadas e áreas sem árvores.
+  version: '1.0.0'
+servers:
+  - url: http://localhost:5000
+    description: Servidor local de desenvolvimento
+
+paths:
+  /api/data:
+    get:
+      summary: Retorna dados de temperatura ou umidade
+      description: Retorna dados de temperatura ou umidade de áreas arborizadas e áreas sem árvores, com base no tipo especificado.
+      parameters:
+        - in: query
+          name: type
+          schema:
+            type: string
+            enum: [temperature, humidity]
+          required: true
+          description: Tipo de dados a serem retornados. Use "temperature" para dados de temperatura e "humidity" para dados de umidade.
+      responses:
+        '200':
+          description: Lista de dados de temperatura ou umidade
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    timestamp:
+                      type: string
+                      format: date-time
+                      description: Data e hora do registro
+                    temperature:
+                      type: number
+                      description: Temperatura registrada (exibido apenas se `type=temperature`)
+                    humidity:
+                      type: number
+                      description: Umidade registrada (exibido apenas se `type=humidity`)
+                    area_type:
+                      type: string
+                      description: Tipo de área (arborizada ou sem árvores)
+        '400':
+          description: Requisição inválida. Verifique se o parâmetro "type" está correto.
+        '500':
+          description: Erro no servidor ao buscar os dados
+
+  /api/auth/register:
+    post:
+      summary: Registra um novo usuário
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '201':
+          description: Usuário registrado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  token:
+                    type: string
+        '400':
+          description: Usuário já registrado
+        '500':
+          description: Erro ao registrar usuário
+
+  /api/auth/login:
+    post:
+      summary: Login do usuário
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Login bem-sucedido
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  token:
+                    type: string
+        '400':
+          description: Credenciais inválidas
+        '500':
+          description: Erro ao fazer login
+
+  /api/auth/verify-token:
+    get:
+      summary: Verifica a validade do token JWT
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Token válido
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  userId:
+                    type: string
+        '401':
+          description: Token não fornecido
+        '400':
+          description: Token inválido
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

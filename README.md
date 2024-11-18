@@ -14,21 +14,20 @@ Este projeto é uma aplicação web que permite comparar as condições de clima
 - **Outros/**: Grafana para visualização avançada dos dados, caso desejado
 
 ## Estrutura do Projeto
-```
-   ├── frontend/           # Aplicação React
-   │   ├── src/
-   │   │   ├── components/    # Componentes dos gráficos (TemperatureChart, HumidityChart, etc.)
-   │   │   ├── App.js         # Configuração de rotas e componentes principais
-   │   │   ├── Navbar.js      # Barra de navegação
-   │   │   └── ...
-   │   └── ...
-   ├── backend/            # Servidor Express e configuração da API
-   │   ├── server.js        # Servidor Node.js com rotas para a API
-   │   ├── .env             # Variáveis de ambiente, incluindo MONGO_URI
-   │   └── ...
-   ├── README.md           # Documentação do projeto
-   └── openapi.yaml        # Descrição OpenAPI (Swagger) da API
-```
+├── frontend/           # Aplicação React
+│   ├── src/
+│   │   ├── components/    # Componentes dos gráficos (TemperatureChart, HumidityChart, etc.)
+│   │   ├── App.js         # Configuração de rotas e componentes principais
+│   │   ├── Navbar.js      # Barra de navegação
+│   │   └── ...
+│   └── ...
+├── backend/            # Servidor Express e configuração da API
+│   ├── server.js        # Servidor Node.js com rotas para a API
+│   ├── .env             # Variáveis de ambiente, incluindo MONGO_URI
+│   └── ...
+├── README.md           # Documentação do projeto
+└── openapi.yaml        # Descrição OpenAPI (Swagger) da API
+
 ## Pré-requisitos
 Node.js (versão 14 ou superior)
 MongoDB Atlas: Banco de dados na nuvem com conexão configurada
@@ -50,8 +49,7 @@ NPM ou Yarn: Para instalar pacotes e dependências
    ```
 
 3. Inicie o servidor
-   ```
-   node server.js
+   ```node server.js
    ```
 
 ### Frontend
@@ -105,6 +103,6 @@ Parâmetro: type (temperature ou humidity)
 **MongoDB Compass:/**: Ferramenta recomendada para explorar o banco de dados MongoDB localmente.
 
 ## Contribuição
-- Leonardo Victor Pereira
+- Leonardo Victor Pereira Ferreira
 - João Pedro Andrade Cintra
 - Claudio Matos
